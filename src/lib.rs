@@ -15,6 +15,8 @@ struct LegatoFixPlugin {
     send_buffer: SendEventBuffer,
 }
 
+plugin_main!(LegatoFixPlugin);
+
 impl LegatoFixPlugin {
     fn handle_events(&mut self, events: &Events) {
         let mut notes = self.notes.get();
@@ -91,5 +93,3 @@ impl Plugin for LegatoFixPlugin {
         }
     }
 }
-
-plugin_main!(LegatoFixPlugin);
