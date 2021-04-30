@@ -1,6 +1,6 @@
 [package]
-name = "pm01vst"
-version = "0.0.1"
+name = "legato-fix-vst"
+version = "0.0.2"
 authors = ["sockcrates <17348049+sockcrates@users.noreply.github.com>"]
 edition = "2018"
 
@@ -10,5 +10,5 @@ edition = "2018"
 vst = { git = "https://github.com/rustaudio/vst-rs" }
 
 [lib]
-name = "pm01vst"
+name = "legatofixvst"
 crate-type = ["cdylib"]
