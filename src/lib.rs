@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate vst;
 
+use std::cell::RefCell;
 use vst::api::Events;
 use vst::buffer::{AudioBuffer, SendEventBuffer};
 use vst::event::Event;
@@ -43,29 +44,34 @@ impl Plugin for PM01Plugin {
     }
 
     fn process_events(&mut self, events: &Events) {
-        for event in events.events() {
-            match event {
-                Event::Midi(ev) => match ev.data[0] {
-                    // Note on
-                    144 => {
-                        self.notes += 1u8;
-                        // Better way to store this event?
-                        self.recv_buffer.store_events(vec![ev]);
-                    }
-                    // Note off
-                    128 => {
-                        self.notes -= 1u8;
-
-                        if self.notes == 0u8 {
-                            // Better way to store this event?
-                            self.recv_buffer.store_events(vec![ev]);
+        let notes = RefCell::new(self.notes);
+        {
+            let fixed_events = events.events().filter(|event| {
+                match event {
+                    Event::Midi(ev) => match ev.data[0] {
+                        // Note on
+                        144 => {
+                            notes.replace_with(|&mut old| old + 1u8);
+                            true
                         }
-                    }
-                    _ => (),
-                },
-                _ => (),
-            }
+                        // Note off
+                        128 => {
+                            notes.replace_with(|&mut old| old - 1u8);
+
+                            if *notes.borrow() == 0u8 {
+                                return true;
+                            }
+
+                            false
+                        }
+                        _ => true,
+                    },
+                    _ => true,
+                }
+            });
+            self.recv_buffer.store_events(fixed_events);
         }
+        self.notes += notes.into_inner();
     }
 
     fn process(&mut self, _buffer: &mut AudioBuffer<f32>) {
