@@ -1,16 +1,16 @@
 #[macro_use]
 extern crate vst;
 
-use std::cell::Cell;
 use vst::api::Events;
 use vst::buffer::{AudioBuffer, SendEventBuffer};
-use vst::event::Event;
+use vst::event::{Event, MidiEvent};
 use vst::plugin::{CanDo, Category, HostCallback, Info, Plugin};
 
 #[derive(Default)]
 struct LegatoFixPlugin {
     host: HostCallback,
-    notes: Cell<u8>,
+    notes: i8,
+    note_off_data: Vec<MidiEvent>,
     recv_buffer: SendEventBuffer,
     send_buffer: SendEventBuffer,
 }
@@ -19,33 +19,28 @@ plugin_main!(LegatoFixPlugin);
 
 impl LegatoFixPlugin {
     fn handle_events(&mut self, events: &Events) {
-        let mut notes = self.notes.get();
-        let fixed_events = events.events().filter(|event| {
+        let mut fixed_events = vec![];
+
+        for event in events.events() {
             match event {
                 Event::Midi(ev) => match ev.data[0] {
                     // Note on
                     144 => {
-                        notes += 1u8;
-                        true
+                        self.notes += 1i8;
+                        fixed_events.push(event);
                     }
                     // Note off
                     128 => {
-                        notes -= 1u8;
-
-                        if notes > 0u8 {
-                            return false;
-                        }
-
-                        true
+                        self.note_off_data.push(ev);
+                        self.notes -= 1i8;
                     }
-                    _ => true,
+                    _ => fixed_events.push(event),
                 },
-                _ => true,
+                _ => fixed_events.push(event),
             }
-        });
+        }
 
         self.recv_buffer.store_events(fixed_events);
-        self.notes.set(notes);
     }
 
     fn send_midi(&mut self) {
@@ -59,7 +54,6 @@ impl Plugin for LegatoFixPlugin {
     fn new(host: HostCallback) -> Self {
         LegatoFixPlugin {
             host,
-            notes: Cell::new(0),
             ..Default::default()
         }
     }
@@ -77,6 +71,10 @@ impl Plugin for LegatoFixPlugin {
 
     fn process_events(&mut self, events: &Events) {
         self.handle_events(events);
+
+        if self.notes <= 0 {
+            self.recv_buffer.store_events(self.note_off_data.clone());
+        }
     }
 
     fn process(&mut self, _buffer: &mut AudioBuffer<f32>) {
