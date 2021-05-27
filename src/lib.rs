@@ -74,6 +74,8 @@ impl Plugin for LegatoFixPlugin {
 
         if self.notes <= 0 {
             self.recv_buffer.store_events(self.note_off_data.clone());
+            self.note_off_data.clear();
+            self.notes = 0;
         }
     }
 
