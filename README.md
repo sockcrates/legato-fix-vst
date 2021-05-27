@@ -18,7 +18,7 @@ To the form:
         [_______]
 ~~~
 
-Where ("```[```" is a note on event and "```]```" is a note off event).
+Where "```[```" is a note on event and "```]```" is a note off event.
 
 ### Usage
 Use the compiled VST with your DAW and have it output MIDI to your MIDI/CV converter.
