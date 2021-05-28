@@ -9,8 +9,8 @@ The plugin takes incoming MIDI notes of the form:
 ~~~
 ...|
 E  |[___]
-D# | [________]
-D  |      [_______]
+D# |   [________]
+D  |        [_______]
 ...|
 ~~~
 
