@@ -22,10 +22,5 @@ jobs:
       - uses: github/codeql-action/init@v3
         with:
           languages: rust
-          build-mode: manual
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: 1.94.1
-      - name: Build
-        run: cargo build --locked
+          build-mode: none
       - uses: github/codeql-action/analyze@v3
