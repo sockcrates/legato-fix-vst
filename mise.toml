@@ -1,0 +1,16 @@
+[tools]
+# Cargo is distributed with the Rust toolchain, so mise manages Cargo through
+# this pinned Rust release.
+rust = "1.94.1"
+
+[tasks.check]
+description = "Type-check the plugin"
+run = "cargo check"
+
+[tasks.test]
+description = "Run the test suite"
+run = "cargo test"
+
+[tasks.build]
+description = "Build the release VST library"
+run = "cargo build --release"
